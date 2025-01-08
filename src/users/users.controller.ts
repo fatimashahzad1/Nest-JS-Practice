@@ -2,7 +2,9 @@ import {
   Body,
   Controller,
   DefaultValuePipe,
+  forwardRef,
   Get,
+  Inject,
   Param,
   ParseIntPipe,
   Patch,
@@ -16,7 +18,10 @@ import { UpdateUserDTO } from './dtos/update-user.dto';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly userService: UsersService) {}
+  constructor(
+    @Inject(forwardRef(() => UsersService))
+    private readonly userService: UsersService,
+  ) {}
 
   @Get(':isMarried?')
   getUsers(

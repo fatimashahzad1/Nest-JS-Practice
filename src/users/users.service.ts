@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { CreateUserDTO } from './dtos/create-user.dto';
+import { AuthService } from 'src/auth/auth.service';
 
 @Injectable()
 export class UsersService {
@@ -11,6 +12,7 @@ export class UsersService {
       gender: 'female',
       email: 'fatima@gmail.com',
       isMarried: false,
+      password: '123456',
     },
     {
       id: 2,
@@ -19,6 +21,7 @@ export class UsersService {
       gender: 'female',
       email: 'hafsa@gmail.com',
       isMarried: false,
+      password: '123456',
     },
     {
       id: 3,
@@ -26,6 +29,7 @@ export class UsersService {
       age: 21,
       gender: 'female',
       email: 'khadija@gmail.com',
+      password: '123456',
     },
     {
       id: 4,
@@ -34,15 +38,27 @@ export class UsersService {
       gender: 'male',
       email: 'abc@gmail.com',
       isMarried: true,
+      password: '123456',
     },
   ];
 
+  constructor(
+    @Inject(forwardRef(() => AuthService))
+    private readonly authService: AuthService,
+  ) {}
+
   getAllUsers(limit: number) {
-    return this.users.filter((user, index) => {
-      if (index < limit) {
-        return user;
-      }
-    });
+    if (this.authService.isAuthenticated) {
+      console.log(
+        'isAuthenticated when fetching all users=',
+        this.authService.isAuthenticated,
+      );
+      return this.users.filter((user, index) => {
+        if (index < limit) {
+          return user;
+        }
+      });
+    }
   }
 
   getUserById(userId: number) {

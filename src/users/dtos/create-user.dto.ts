@@ -20,13 +20,16 @@ export class CreateUserDTO {
   @IsNumber()
   age: number;
 
+  @IsEmail()
+  email: string;
+
+  @IsString()
+  password: string;
+
   @IsOptional()
   @IsString()
   @IsNotEmpty()
   gender?: string;
-
-  @IsEmail()
-  email: string;
 
   @IsOptional()
   @IsBoolean()
