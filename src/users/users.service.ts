@@ -8,6 +8,7 @@ export class UsersService {
       age: 23,
       gender: 'female',
       email: 'fatima@gmail.com',
+      isMarried: false,
     },
     {
       id: 2,
@@ -15,6 +16,7 @@ export class UsersService {
       age: 21,
       gender: 'female',
       email: 'hafsa@gmail.com',
+      isMarried: false,
     },
     {
       id: 3,
@@ -22,6 +24,14 @@ export class UsersService {
       age: 21,
       gender: 'female',
       email: 'khadija@gmail.com',
+    },
+    {
+      id: 4,
+      name: 'abc',
+      age: 21,
+      gender: 'male',
+      email: 'abc@gmail.com',
+      isMarried: true,
     },
   ];
 
