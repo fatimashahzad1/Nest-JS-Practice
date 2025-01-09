@@ -4,12 +4,16 @@ import { CreatePostDto } from './dto/create-post.dto';
 import { Post as PostModel } from '@prisma/client';
 import { ParseStringPipe } from './pipes/ParseStringPipe.pipe';
 import { AuthGuard } from 'src/guards/auth.guard';
+import { Roles } from 'src/decorators/roles.decorator';
+import { Role } from 'src/constants';
+import { RolesGuard } from 'src/guards/roles.guard';
 
 @Controller('post')
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
-  @UseGuards(AuthGuard)
+  @Roles(Role.Admin)
+  @UseGuards(AuthGuard, RolesGuard)
   @Post()
   async create(@Body() post: CreatePostDto): Promise<PostModel> {
     const { title, content, authorId } = post;
