@@ -3,6 +3,7 @@
 /node_modules
 /build
 /.history
+/prisma/migrations
 # Logs
 logs
 *.log

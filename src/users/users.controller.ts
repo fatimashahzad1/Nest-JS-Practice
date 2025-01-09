@@ -1,7 +1,7 @@
 import {
   Body,
   Controller,
-  DefaultValuePipe,
+  Delete,
   forwardRef,
   Get,
   Inject,
@@ -9,11 +9,9 @@ import {
   ParseIntPipe,
   Patch,
   Post,
-  Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDTO } from './dtos/create-user.dto';
-import { StatusDTO } from './dtos/status.dto';
 import { UpdateUserDTO } from './dtos/update-user.dto';
 
 @Controller('users')
@@ -23,19 +21,16 @@ export class UsersController {
     private readonly userService: UsersService,
   ) {}
 
-  @Get(':isMarried?')
-  getUsers(
-    @Query('limit', new DefaultValuePipe(1), ParseIntPipe) limit: number,
-    @Param() param: StatusDTO,
-  ) {
-    console.log({ param });
-    return this.userService.getAllUsers(limit);
+  @Get()
+  getAllUsers() {
+    console.log('users controller');
+    return this.userService.getAllUsers();
   }
 
-  @Get('/user/:id')
-  getUserById(@Param('id', ParseIntPipe) id: number) {
-    return this.userService.getUserById(id);
-  }
+  // @Get('/user/:id')
+  // getUserById(@Param('id', ParseIntPipe) id: number) {
+  //   return this.userService.getUserById(id);
+  // }
 
   @Post()
   createUser(@Body() user: CreateUserDTO) {
@@ -45,9 +40,19 @@ export class UsersController {
     return this.userService.createUser(user);
   }
 
-  @Patch()
-  updateUser(@Body() user: UpdateUserDTO) {
-    console.log({ user });
-    return user;
+  @Patch(':userId')
+  updateUser(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Body() user: UpdateUserDTO,
+  ) {
+    return this.userService.updateUser({
+      where: { id: userId },
+      data: { ...user },
+    });
+  }
+
+  @Delete(':userId')
+  deleteUser(@Param('userId', ParseIntPipe) userId: number) {
+    return this.userService.deleteUser({ id: userId });
   }
 }

@@ -1,72 +1,61 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { CreateUserDTO } from './dtos/create-user.dto';
-import { AuthService } from 'src/auth/auth.service';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { PrismaService } from 'src/prisma.service';
+import { Prisma, User } from '@prisma/client';
 
 @Injectable()
 export class UsersService {
-  users: CreateUserDTO[] = [
-    {
-      id: 1,
-      name: 'fatima',
-      age: 23,
-      gender: 'female',
-      email: 'fatima@gmail.com',
-      isMarried: false,
-      password: '123456',
-    },
-    {
-      id: 2,
-      name: 'hafsa',
-      age: 21,
-      gender: 'female',
-      email: 'hafsa@gmail.com',
-      isMarried: false,
-      password: '123456',
-    },
-    {
-      id: 3,
-      name: 'khadija',
-      age: 21,
-      gender: 'female',
-      email: 'khadija@gmail.com',
-      password: '123456',
-    },
-    {
-      id: 4,
-      name: 'abc',
-      age: 21,
-      gender: 'male',
-      email: 'abc@gmail.com',
-      isMarried: true,
-      password: '123456',
-    },
-  ];
+  constructor(private readonly prisma: PrismaService) {}
 
-  constructor(
-    @Inject(forwardRef(() => AuthService))
-    private readonly authService: AuthService,
-  ) {}
+  async getAllUsers(): Promise<User[]> {
+    console.log('here');
+    return this.prisma.user.findMany();
+  }
 
-  getAllUsers(limit: number) {
-    if (this.authService.isAuthenticated) {
-      console.log(
-        'isAuthenticated when fetching all users=',
-        this.authService.isAuthenticated,
-      );
-      return this.users.filter((user, index) => {
-        if (index < limit) {
-          return user;
-        }
-      });
+  // getUserById(userId: number) {
+  //   return this.users.find((user) => user.id === userId);
+  // }
+
+  async createUser(data: Prisma.UserCreateInput): Promise<User> {
+    try {
+      return await this.prisma.user.create({ data });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        // P2002 is the code for unique constraint violation
+        throw new ConflictException('Email already exists.');
+      }
+      throw error;
     }
   }
 
-  getUserById(userId: number) {
-    return this.users.find((user) => user.id === userId);
+  async updateUser(params: {
+    where: Prisma.UserWhereUniqueInput;
+    data: Prisma.UserUpdateInput;
+  }): Promise<User> {
+    const { where, data } = params;
+    return this.prisma.user.update({
+      data,
+      where,
+    });
   }
 
-  createUser(user: CreateUserDTO) {
-    this.users.push(user);
-    return `user with id ${user.id} is created`;
+  async deleteUser(where: Prisma.UserWhereUniqueInput): Promise<User> {
+    try {
+      return await this.prisma.user.delete({
+        where,
+      });
+    } catch (error) {
+      if (error.code === 'P2025') {
+        // P2025 is Prisma's code for "Record not found"
+        throw new NotFoundException('User not found.');
+      }
+      throw error; // Re-throw other errors
+    }
   }
 }
