@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsEmail,
   IsNotEmpty,
   IsOptional,
@@ -15,4 +16,10 @@ export class CreateUserDTO {
 
   @IsEmail()
   email: string;
+
+  @IsString()
+  password: string;
+
+  @IsBoolean()
+  isAdmin: boolean;
 }

@@ -1,13 +1,15 @@
-import { Controller, Post, Body, Get, Param } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, UseGuards } from '@nestjs/common';
 import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { Post as PostModel } from '@prisma/client';
 import { ParseStringPipe } from './pipes/ParseStringPipe.pipe';
+import { AuthGuard } from 'src/guards/auth.guard';
 
 @Controller('post')
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
+  @UseGuards(AuthGuard)
   @Post()
   async create(@Body() post: CreatePostDto): Promise<PostModel> {
     const { title, content, authorId } = post;

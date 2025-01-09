@@ -27,10 +27,10 @@ export class UsersController {
     return this.userService.getAllUsers();
   }
 
-  // @Get('/user/:id')
-  // getUserById(@Param('id', ParseIntPipe) id: number) {
-  //   return this.userService.getUserById(id);
-  // }
+  @Get(':id')
+  getUserById(@Param('id', ParseIntPipe) id: number) {
+    return this.userService.findOne({ where: { id } });
+  }
 
   @Post()
   createUser(@Body() user: CreateUserDTO) {

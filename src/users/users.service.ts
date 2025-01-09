@@ -15,9 +15,12 @@ export class UsersService {
     return this.prisma.user.findMany();
   }
 
-  // getUserById(userId: number) {
-  //   return this.users.find((user) => user.id === userId);
-  // }
+  async findOne(params: { where?: Prisma.UserWhereUniqueInput }) {
+    const { where } = params;
+    const user = await this.prisma.user.findUnique({ where });
+    if (user) return user;
+    throw new NotFoundException('User not found.');
+  }
 
   async createUser(data: Prisma.UserCreateInput): Promise<User> {
     try {
