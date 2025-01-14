@@ -22,4 +22,17 @@ export class CreateUserDTO {
 
   @IsBoolean()
   isAdmin: boolean;
+
+  @IsString()
+  address: string;
+  @IsString()
+  phoneNumber: string;
+
+  @IsString()
+  country: string;
+  @IsString()
+  bankNo: string;
+
+  @IsBoolean()
+  acceptTerms: boolean;
 }

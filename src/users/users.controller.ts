@@ -8,10 +8,8 @@ import {
   Param,
   ParseIntPipe,
   Patch,
-  Post,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDTO } from './dtos/create-user.dto';
 import { UpdateUserDTO } from './dtos/update-user.dto';
 
 @Controller('users')
@@ -23,21 +21,12 @@ export class UsersController {
 
   @Get()
   getAllUsers() {
-    console.log('users controller');
     return this.userService.getAllUsers();
   }
 
   @Get(':id')
   getUserById(@Param('id', ParseIntPipe) id: number) {
     return this.userService.findOne({ where: { id } });
-  }
-
-  @Post()
-  createUser(@Body() user: CreateUserDTO) {
-    console.log(typeof user);
-    console.log(user instanceof CreateUserDTO);
-    console.log({ user });
-    return this.userService.createUser(user);
   }
 
   @Patch(':userId')
