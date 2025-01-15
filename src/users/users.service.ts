@@ -1,15 +1,22 @@
 import {
   ConflictException,
+  HttpStatus,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma.service';
 import { Prisma, User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { MailService } from 'src/mail/mail.service';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mailService: MailService,
+    private readonly jwtService: JwtService,
+  ) {}
 
   async getAllUsers(): Promise<User[]> {
     console.log('here');
@@ -23,13 +30,27 @@ export class UsersService {
     throw new NotFoundException('User not found.');
   }
 
-  async createUser(data: Prisma.UserCreateInput): Promise<User> {
+  async createUser(data: Prisma.UserCreateInput): Promise<CreateUserResponse> {
     try {
       // Hash the password
       const saltRounds = 10;
       data.password = await bcrypt.hash(data.password, saltRounds);
 
-      return await this.prisma.user.create({ data });
+      // Create the user and capture the created user
+      const user = await this.prisma.user.create({ data });
+
+      const payload = { id: user.id, email: user.email }; // Adjust payload as needed
+      const token = await this.jwtService.signAsync(payload);
+
+      // Send user confirmation email
+      await this.mailService.sendUserConfirmation(user, token, '2025');
+
+      return {
+        user: { name: user.name, email: user.email },
+        success: 'Registered Successfully',
+        message: 'Verification email is sent to your email.',
+        statusCode: HttpStatus.CREATED,
+      };
     } catch (error) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&

@@ -12,7 +12,7 @@ export class AuthController {
     private readonly usersService: UsersService,
   ) {}
 
-  @Post('sign-in')
+  @Post('login')
   signIn(
     @Body() credentials: SignInDto,
     @Res({ passthrough: true }) response: Response,
