@@ -1,12 +1,13 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
+import { VERIFICATION_ROUTE } from 'src/constants/index';
 
 @Injectable()
 export class MailService {
   constructor(private readonly mailerService: MailerService) {}
 
   async sendUserConfirmation(user: User, token: string, year: string) {
-    const url = `example.com/auth/confirm?token=${token}`;
+    const url = `${process.env.CLIENT_URL}${VERIFICATION_ROUTE}?token=${token}`;
 
     await this.mailerService.sendMail({
       to: user.email,

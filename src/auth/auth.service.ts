@@ -1,6 +1,6 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, TokenExpiredError } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { Response } from 'express';
 
@@ -35,5 +35,42 @@ export class AuthService {
     return {
       message: 'Login successful.',
     };
+  }
+
+  async verification(token: string) {
+    try {
+      const decoded = await this.jwtService.verifyAsync(token, {
+        secret: process.env.SECRET_KEY,
+      });
+
+      console.log({ decoded });
+
+      const user = await this.usersService.findOne({
+        where: { email: decoded.email },
+      });
+
+      if (!user) {
+        throw new UnauthorizedException('Invalid credentials.');
+      }
+
+      await this.usersService.updateUser({
+        where: { email: decoded.email },
+        data: { isVerified: true },
+      });
+
+      return {
+        message: 'Verification successful.',
+        success: 'Success',
+        statusCode: HttpStatus.OK,
+      };
+    } catch (error) {
+      if (error instanceof TokenExpiredError) {
+        throw new UnauthorizedException(
+          'The token has expired. Please request a new verification email.',
+        );
+      }
+
+      throw new UnauthorizedException('Invalid or malformed token.');
+    }
   }
 }

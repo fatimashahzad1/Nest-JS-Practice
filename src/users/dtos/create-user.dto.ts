@@ -25,14 +25,20 @@ export class CreateUserDTO {
 
   @IsString()
   address: string;
+
   @IsString()
   phoneNumber: string;
 
   @IsString()
   country: string;
+
   @IsString()
   bankNo: string;
 
   @IsBoolean()
   acceptTerms: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  isVerified: boolean;
 }

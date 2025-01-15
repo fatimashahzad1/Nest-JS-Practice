@@ -9,6 +9,7 @@ import { Prisma, User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { MailService } from 'src/mail/mail.service';
 import { JwtService } from '@nestjs/jwt';
+import { TOKEN_EXPIRATION } from 'src/constants/index';
 
 @Injectable()
 export class UsersService {
@@ -40,7 +41,9 @@ export class UsersService {
       const user = await this.prisma.user.create({ data });
 
       const payload = { id: user.id, email: user.email }; // Adjust payload as needed
-      const token = await this.jwtService.signAsync(payload);
+      const token = await this.jwtService.signAsync(payload, {
+        expiresIn: TOKEN_EXPIRATION.VERIFICATION,
+      });
 
       // Send user confirmation email
       await this.mailService.sendUserConfirmation(user, token, '2025');
