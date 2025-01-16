@@ -1,6 +1,10 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
-import { VERIFICATION_ROUTE } from 'src/constants/index';
+import {
+  APP_NAME,
+  RESET_PASSWORD_ROUTE,
+  VERIFICATION_ROUTE,
+} from 'src/constants/index';
 
 @Injectable()
 export class MailService {
@@ -13,12 +17,27 @@ export class MailService {
       to: user.email,
       // from: '"Support Team" <support@example.com>', // override default from
       subject: 'Welcome to Nice App! Confirm your Email',
-      template: './verification', // `.hbs` extension is appended automatically
+      template: './verification',
       context: {
-        // ✏️ filling curly brackets with content
         name: user.name,
         url,
         year,
+      },
+    });
+  }
+
+  async sendResetPasswordLink(name: string, email: string, token: string) {
+    const resetLink = `${process.env.CLIENT_URL}${RESET_PASSWORD_ROUTE}?token=${token}`;
+
+    await this.mailerService.sendMail({
+      to: email,
+      subject: 'Reset Password',
+      template: './reset',
+      context: {
+        name,
+        email,
+        resetLink,
+        companyName: APP_NAME,
       },
     });
   }

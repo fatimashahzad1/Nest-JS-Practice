@@ -3,7 +3,9 @@ import { PipeTransform, Injectable, BadRequestException } from '@nestjs/common';
 @Injectable()
 export class ParseTokenPipe implements PipeTransform {
   transform(value: any) {
-    console.log('token in pipe=', value);
+    if (!value) {
+      throw new BadRequestException('Token must be present');
+    }
     const tokenParts = value.split('.');
 
     // Ensure the token has three parts and each part is non-empty

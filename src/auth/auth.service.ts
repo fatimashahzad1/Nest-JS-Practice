@@ -1,14 +1,23 @@
-import { HttpStatus, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UsersService } from 'src/users/users.service';
 import { JwtService, TokenExpiredError } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { Response } from 'express';
+import { MailService } from 'src/mail/mail.service';
+import { TOKEN_EXPIRATION } from 'src/constants/index';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
+    private readonly mailService: MailService,
   ) {}
 
   async signIn(email: string, pass: string, response: Response): Promise<any> {
@@ -42,9 +51,6 @@ export class AuthService {
       const decoded = await this.jwtService.verifyAsync(token, {
         secret: process.env.SECRET_KEY,
       });
-
-      console.log({ decoded });
-
       const user = await this.usersService.findOne({
         where: { email: decoded.email },
       });
@@ -71,6 +77,77 @@ export class AuthService {
       }
 
       throw new UnauthorizedException('Invalid or malformed token.');
+    }
+  }
+
+  async forgotPassword(email: string): Promise<any> {
+    try {
+      const user = await this.usersService.findOne({ where: { email: email } });
+      if (!user) {
+        throw new NotFoundException('User with this email does not exist.');
+      }
+      //create token
+      const payload = { id: user.id, email: user.email };
+      const token = await this.jwtService.signAsync(payload, {
+        expiresIn: TOKEN_EXPIRATION.VERIFICATION,
+      });
+      //send email
+      await this.mailService.sendResetPasswordLink(user.name, email, token);
+      return {
+        message: 'Reset password link sent to your email.',
+        success: 'Success',
+        statusCode: HttpStatus.OK,
+      };
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      // Handle specific errors for better debugging
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      // Default error response
+      throw new UnauthorizedException('Invalid credentials.');
+    }
+  }
+
+  async resetPassword(
+    password: string,
+    confirmPassword: string,
+    token: string,
+  ): Promise<any> {
+    try {
+      if (password !== confirmPassword) {
+        throw new BadRequestException(
+          'Password and confirm password do not match.',
+        );
+      }
+      const decoded = await this.jwtService.verifyAsync(token, {
+        secret: process.env.SECRET_KEY,
+      });
+      const user = await this.usersService.findOne({
+        where: { email: decoded.email },
+      });
+
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+
+      await this.usersService.updateUser({
+        where: { email: decoded.email },
+        data: { password: await bcrypt.hash(password, 10) },
+      });
+      return {
+        message: 'Password Successfully Changed',
+        success: 'Success',
+        statusCode: HttpStatus.OK,
+      };
+    } catch (error) {
+      if (error instanceof TokenExpiredError) {
+        throw new UnauthorizedException(
+          'The token has expired. Please request a new verification email.',
+        );
+      }
+
+      throw error;
     }
   }
 }
