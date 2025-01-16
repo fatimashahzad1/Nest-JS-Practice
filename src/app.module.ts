@@ -7,6 +7,7 @@ import { PostModule } from './post/post.module';
 import { AuthModule } from './auth/auth.module';
 import { MailModule } from './mail/mail.module';
 import { ConfigModule } from '@nestjs/config';
+import { ArticleModule } from './article/article.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ConfigModule } from '@nestjs/config';
       isGlobal: true, // no need to import into other modules
       envFilePath: '.env',
     }),
+    ArticleModule,
   ],
   controllers: [AppController],
   providers: [AppService],
