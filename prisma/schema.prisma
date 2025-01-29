@@ -26,7 +26,21 @@ model User {
   posts       Post[]
   acceptTerms Boolean   @default(false)
   isVerified  Boolean?  @default(false)
-  Article     Article[]
+  articles    Article[]
+  followers   Follow[]  @relation("UserFollowers")
+  following   Follow[]  @relation("UserFollowing")
+}
+
+model Follow {
+  id          Int      @id @default(autoincrement())
+  followerId  Int
+  followingId Int
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("UserFollowers", fields: [followerId], references: [id])
+  following User @relation("UserFollowing", fields: [followingId], references: [id])
+
+  @@unique([followerId, followingId]) // Prevent duplicate followsP
 }
 
 model Post {

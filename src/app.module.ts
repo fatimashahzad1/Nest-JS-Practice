@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { MailModule } from './mail/mail.module';
 import { ConfigModule } from '@nestjs/config';
 import { ArticleModule } from './article/article.module';
+import { FollowModule } from './follow/follow.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ArticleModule } from './article/article.module';
       envFilePath: '.env',
     }),
     ArticleModule,
+    FollowModule,
   ],
   controllers: [AppController],
   providers: [AppService],
