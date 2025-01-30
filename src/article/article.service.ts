@@ -10,12 +10,30 @@ export class ArticleService {
     return this.prisma.article.create({ data });
   }
 
-  findAll(params: { skip?: number; take?: number }) {
+  async findAll(params: { skip?: number; take?: number }) {
     const { skip, take } = params;
-    return this.prisma.article.findMany({ skip, take });
+    const articles = await this.prisma.article.findMany({
+      skip,
+      take,
+      include: {
+        creator: { select: { name: true } },
+      },
+    });
+    return {
+      pagination: {
+        total_count: await this.prisma.article.count(),
+      },
+      articles,
+    };
   }
 
-  findOne(id: number) {
-    return `This action returns a us#${id} article`;
+  async findOne(id: number) {
+    console.log('id got ===', id);
+    return await this.prisma.article.findUnique({
+      where: { id: id },
+      include: {
+        creator: { select: { name: true } },
+      },
+    });
   }
 }
