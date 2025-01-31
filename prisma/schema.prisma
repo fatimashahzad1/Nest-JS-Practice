@@ -29,6 +29,8 @@ model User {
   articles    Article[]
   followers   Follow[]  @relation("UserFollowers")
   following   Follow[]  @relation("UserFollowing")
+  chats       Chat[]    @relation("UserChats")
+  Message     Message[]
 }
 
 model Follow {
@@ -59,4 +61,22 @@ model Article {
   estimatedTime String
   creator       User?   @relation(fields: [creatorId], references: [id])
   creatorId     Int?
+}
+
+model Chat {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  users     User[]    @relation("UserChats")
+  messages  Message[]
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  chatId    Int
+  content   String
+  createdAt DateTime @default(now())
+  senderId  Int
+  chat      Chat     @relation(fields: [chatId], references: [id])
+  sender    User     @relation(fields: [senderId], references: [id])
 }

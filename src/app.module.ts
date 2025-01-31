@@ -9,6 +9,7 @@ import { MailModule } from './mail/mail.module';
 import { ConfigModule } from '@nestjs/config';
 import { ArticleModule } from './article/article.module';
 import { FollowModule } from './follow/follow.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { FollowModule } from './follow/follow.module';
     }),
     ArticleModule,
     FollowModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],
