@@ -6,9 +6,11 @@ import {
   Request,
   Delete,
   Get,
+  Query,
 } from '@nestjs/common';
 import { FollowService } from './follow.service';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
+import { ParseStringPipe } from 'src/post/pipes/ParseStringPipe.pipe';
 
 @Controller('people')
 @UseGuards(JwtAuthGuard)
@@ -34,5 +36,17 @@ export class FollowController {
   async getAllUsersWithFollowStatus(@Request() req) {
     const currentUserId = req.user.id; // Extract current logged-in user's ID from JWT payload
     return this.followService.getAllUsersWithFollowStatus(currentUserId);
+  }
+
+  @Get('/search')
+  async getFilteredPosts(
+    @Query('searchString', ParseStringPipe) searchString: string,
+    @Request() req,
+  ): Promise<any> {
+    const currentUserId = req.user.id;
+    return this.followService.getSearchedUsers({
+      currentUserId,
+      searchString,
+    });
   }
 }

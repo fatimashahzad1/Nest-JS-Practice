@@ -86,4 +86,36 @@ export class FollowService {
       })),
     };
   }
+
+  //get users by the search
+  async getSearchedUsers(params: {
+    currentUserId: number;
+    searchString: string;
+  }) {
+    const { currentUserId, searchString } = params;
+    const users = await this.prisma.user.findMany({
+      where: {
+        id: { not: currentUserId },
+        OR: [
+          {
+            name: { contains: searchString, mode: 'insensitive' },
+          },
+        ],
+      },
+      include: {
+        following: {
+          where: { followerId: currentUserId },
+          select: { follower: true },
+        },
+      },
+    });
+    return {
+      people: users.map((user) => ({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        isFollowedByCurrentUser: user.following.length > 0,
+      })),
+    };
+  }
 }
