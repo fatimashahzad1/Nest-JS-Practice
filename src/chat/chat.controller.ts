@@ -36,13 +36,19 @@ export class ChatController {
     return this.chatService.sendMessage(chatId, req.user.id, content);
   }
 
+  // Get all messages of a chat
   @Get('messages/:chatId')
   async getChatMessages(
     @Param('chatId', ParseIntPipe) chatId: number,
-    @Query('take', ParseIntPipe) take: number,
     @Request() req,
+    @Query('take') take?: number,
     @Query('cursor') cursor?: number,
   ) {
-    return this.chatService.getChatMessages(chatId, take, req.user.id, cursor);
+    return this.chatService.getChatMessages(chatId, req.user.id, take, cursor);
+  }
+  //Get all chats of a user
+  @Get('all')
+  async getAllChats(@Request() req) {
+    return this.chatService.getUserChats(req.user.id);
   }
 }

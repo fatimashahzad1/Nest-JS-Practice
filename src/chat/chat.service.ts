@@ -1,5 +1,5 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
-import { Chat, Message } from '@prisma/client';
+import { ForbiddenException, HttpStatus, Injectable } from '@nestjs/common';
+import { Chat } from '@prisma/client';
 import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
@@ -50,11 +50,7 @@ export class ChatService {
   }
 
   // Send a message in a chat
-  async sendMessage(
-    chatId: number,
-    currentUserId: number,
-    content: string,
-  ): Promise<Message> {
+  async sendMessage(chatId: number, currentUserId: number, content: string) {
     // Check if the chat exists and contains the sender
     const chat = await this.prisma.chat.findUnique({
       where: { id: chatId },
@@ -74,20 +70,24 @@ export class ChatService {
       },
     });
 
-    return message;
+    return {
+      message: message.content,
+      success: 'Success',
+      statusCode: HttpStatus.OK,
+    };
   }
 
   async getChatMessages(
     chatId: number,
-    take: number = 5,
-    currentUserID,
+    currentUserID: number,
+    take?: number,
     cursor?: number,
   ) {
     // Fetch messages with pagination
     const messages = await this.prisma.message.findMany({
       where: { chatId },
       orderBy: { createdAt: 'desc' }, // Get newest messages first
-      take, // Limit results
+      take: take, // Fetch one extra message to determine next cursor
       skip: cursor ? 1 : 0, // Skip cursor message if provided
       cursor: cursor ? { id: cursor } : undefined, // Cursor-based pagination
       include: {
@@ -96,9 +96,14 @@ export class ChatService {
         },
       },
     });
+    // Determine nextCursor
+    let nextCursor: number | null = null;
+    if (messages.length >= take) {
+      const lastMessage = messages.at(-1); // Remove extra message
+      nextCursor = lastMessage?.id || null;
+    }
 
-    // Transform the messages to include `isMine` status
-    return messages.map((message) => ({
+    const transformMessages = messages.map((message) => ({
       id: message.id,
       content: message.content,
       createdAt: message.createdAt,
@@ -106,5 +111,30 @@ export class ChatService {
       senderName: message.sender.name,
       isMine: message.senderId === currentUserID, // Determine if the message was sent by the current user
     }));
+    return {
+      messages: transformMessages.reverse(),
+      nextCursor, // Return next cursor for pagination
+    };
+  }
+
+  async getUserChats(userId: number) {
+    return await this.prisma.chat.findMany({
+      where: {
+        users: {
+          some: { id: userId }, // Fetch chats where user is a participant
+        },
+      },
+      include: {
+        users: { where: { id: { not: userId } }, select: { name: true } }, // Exclude the logged-in user},
+        messages: {
+          orderBy: { createdAt: 'desc' }, // Order messages by latest
+          take: 1, // Fetch only the latest message for preview
+          select: {
+            content: true,
+            createdAt: true,
+          },
+        },
+      },
+    });
   }
 }
