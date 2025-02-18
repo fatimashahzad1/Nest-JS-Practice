@@ -71,6 +71,7 @@ export class ChatService {
     });
 
     return {
+      chatId: message.chatId,
       message: message.content,
       success: 'Success',
       statusCode: HttpStatus.OK,

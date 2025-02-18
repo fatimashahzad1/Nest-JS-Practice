@@ -10,7 +10,8 @@ import { ConfigModule } from '@nestjs/config';
 import { ArticleModule } from './article/article.module';
 import { FollowModule } from './follow/follow.module';
 import { ChatModule } from './chat/chat.module';
-
+import { ChatGateway } from './sockets/socket/socket.gateway';
+import { PrismaService } from './prisma.service';
 @Module({
   imports: [
     UsersModule,
@@ -26,7 +27,7 @@ import { ChatModule } from './chat/chat.module';
     ChatModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, ChatGateway, PrismaService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
