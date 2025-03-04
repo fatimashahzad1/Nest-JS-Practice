@@ -38,6 +38,12 @@ export class FollowController {
     return this.followService.getAllUsersWithFollowStatus(currentUserId);
   }
 
+  @Get('/follow')
+  async getAllFollowedUSers(@Request() req) {
+    const currentUserId = req.user.id; // Extract current logged-in user's ID from JWT payload
+    return this.followService.getAllFollowedUsers(currentUserId);
+  }
+
   @Get('/search')
   async getFilteredPosts(
     @Query('searchString', ParseStringPipe) searchString: string,

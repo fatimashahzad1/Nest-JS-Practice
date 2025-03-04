@@ -12,6 +12,8 @@ import { FollowModule } from './follow/follow.module';
 import { ChatModule } from './chat/chat.module';
 import { ChatGateway } from './sockets/socket/socket.gateway';
 import { PrismaService } from './prisma.service';
+import { AgoraModule } from './agora/agora.module';
+import { AgoraService } from './agora/agora.service';
 @Module({
   imports: [
     UsersModule,
@@ -25,9 +27,10 @@ import { PrismaService } from './prisma.service';
     ArticleModule,
     FollowModule,
     ChatModule,
+    AgoraModule,
   ],
   controllers: [AppController],
-  providers: [AppService, ChatGateway, PrismaService],
+  providers: [AppService, ChatGateway, PrismaService, AgoraService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

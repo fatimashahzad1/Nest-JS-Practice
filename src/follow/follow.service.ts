@@ -118,4 +118,27 @@ export class FollowService {
       })),
     };
   }
+
+  // Get all users with follow status
+  async getAllFollowedUsers(currentUserId: number) {
+    console.log({ currentUserId });
+    const users = await this.prisma.user.findUnique({
+      where: { id: currentUserId },
+      include: {
+        followers: {
+          select: {
+            following: {
+              select: { id: true, name: true, email: true },
+            },
+          },
+        },
+      },
+    });
+    return {
+      id: users.id,
+      name: users.name,
+      email: users.email,
+      following: users.followers.map((user) => user.following),
+    };
+  }
 }
