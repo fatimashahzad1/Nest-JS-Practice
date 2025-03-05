@@ -11,6 +11,8 @@ import {
 import { RtcRole } from 'agora-access-token';
 import { Server, Socket } from 'socket.io';
 import { AgoraService } from 'src/agora/agora.service';
+import { CallService } from 'src/call/call.service';
+import { CALL_STATUS } from 'src/constants/index';
 import { PrismaService } from 'src/prisma.service';
 
 @WebSocketGateway(3005, {
@@ -27,6 +29,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private readonly prisma: PrismaService,
     private readonly agoraTokenService: AgoraService,
+    private readonly callService: CallService,
   ) {}
 
   private readonly users = new Map<number, Socket>();
@@ -194,6 +197,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       channelName,
       token,
     });
+    await this.callService.createCall(
+      callerId,
+      receiverId,
+      CALL_STATUS.RECEIVED,
+    );
   }
 
   @SubscribeMessage('leaveCall')

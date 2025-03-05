@@ -119,14 +119,25 @@ export class ChatService {
   }
 
   async getUserChats(userId: number) {
-    return await this.prisma.chat.findMany({
+    const chats = await this.prisma.chat.findMany({
       where: {
         users: {
-          some: { id: userId }, // Fetch chats where user is a participant
+          some: { id: userId }, // Fetch chats where user is a participant'
         },
       },
       include: {
-        users: { where: { id: { not: userId } }, select: { name: true } }, // Exclude the logged-in user},
+        users: {
+          where: { id: { not: userId } },
+          include: {
+            following: {
+              select: {
+                followerId: true,
+                followingId: true,
+              },
+              where: { followerId: userId },
+            },
+          },
+        }, // Exclude the logged-in user},
         messages: {
           orderBy: { createdAt: 'desc' }, // Order messages by latest
           take: 1, // Fetch only the latest message for preview
@@ -137,5 +148,7 @@ export class ChatService {
         },
       },
     });
+    // Filter out users where `following` array length is <= 1
+    return chats.filter((chat) => chat.users[0].following.length > 0);
   }
 }

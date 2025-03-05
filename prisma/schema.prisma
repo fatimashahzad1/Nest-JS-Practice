@@ -14,23 +14,25 @@ datasource db {
 }
 
 model User {
-  id          Int       @id @default(autoincrement())
-  email       String    @unique
-  password    String    @default("")
-  address     String    @default("")
-  phoneNumber String    @default("")
-  country     String    @default("")
-  bankNo      String    @default("")
-  isAdmin     Boolean   @default(false)
-  name        String
-  posts       Post[]
-  acceptTerms Boolean   @default(false)
-  isVerified  Boolean?  @default(false)
-  articles    Article[]
-  followers   Follow[]  @relation("UserFollowers")
-  following   Follow[]  @relation("UserFollowing")
-  chats       Chat[]    @relation("UserChats")
-  Message     Message[]
+  id             Int       @id @default(autoincrement())
+  email          String    @unique
+  password       String    @default("")
+  address        String    @default("")
+  phoneNumber    String    @default("")
+  country        String    @default("")
+  bankNo         String    @default("")
+  isAdmin        Boolean   @default(false)
+  name           String
+  posts          Post[]
+  acceptTerms    Boolean   @default(false)
+  isVerified     Boolean?  @default(false)
+  articles       Article[]
+  followers      Follow[]  @relation("UserFollowers")
+  following      Follow[]  @relation("UserFollowing")
+  chats          Chat[]    @relation("UserChats")
+  Message        Message[]
+  initiatorCalls Call[]    @relation("initiator")
+  receivedCalls  Call[]    @relation("received")
 }
 
 model Follow {
@@ -79,4 +81,21 @@ model Message {
   senderId  Int
   chat      Chat     @relation(fields: [chatId], references: [id])
   sender    User     @relation(fields: [senderId], references: [id])
+}
+
+model Call {
+  id          Int        @id @default(autoincrement())
+  initiatorId Int
+  receiverId  Int
+  status      CallStatus
+  createdAt   DateTime   @default(now())
+
+  initiator User @relation("initiator", fields: [initiatorId], references: [id])
+  receiver  User @relation("received", fields: [receiverId], references: [id])
+}
+
+enum CallStatus {
+  RECEIVED
+  REJECTED
+  MISSED
 }
