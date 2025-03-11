@@ -28,14 +28,16 @@ export class PostService {
     cursor?: Prisma.PostWhereUniqueInput;
     where?: Prisma.PostWhereInput;
     orderBy?: Prisma.PostOrderByWithRelationInput;
+    include?: Prisma.PostInclude;
   }): Promise<Post[]> {
-    const { skip, take, cursor, where, orderBy } = params;
+    const { skip, take, cursor, where, orderBy, include } = params;
     return this.prisma.post.findMany({
       skip,
       take,
       cursor,
       where,
       orderBy,
+      include,
     });
   }
 }

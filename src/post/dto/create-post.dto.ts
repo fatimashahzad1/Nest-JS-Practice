@@ -1,16 +1,13 @@
 import {
-  IsBoolean,
+  IsEnum,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
 } from 'class-validator';
+import { POST_TYPE_NUMBER } from 'src/constants/index';
 
 export class CreatePostDto {
-  @IsString()
-  @IsNotEmpty()
-  title: string;
-
   @IsNumber()
   authorId: number;
 
@@ -19,7 +16,11 @@ export class CreatePostDto {
   @IsNotEmpty()
   content: string;
 
+  @IsEnum(POST_TYPE_NUMBER)
+  type: POST_TYPE_NUMBER;
+
   @IsOptional()
-  @IsBoolean()
-  published: boolean;
+  @IsString()
+  @IsNotEmpty()
+  postImage: string;
 }

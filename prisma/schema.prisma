@@ -49,11 +49,17 @@ model Follow {
 
 model Post {
   id        Int      @id @default(autoincrement())
-  title     String
   content   String?
-  published Boolean? @default(false)
   author    User?    @relation(fields: [authorId], references: [id])
   authorId  Int?
+  type      PostType @default(FEED)
+  postImage String?
+  createdAt DateTime @default(now())
+}
+
+enum PostType {
+  EVENT
+  FEED
 }
 
 model Article {
@@ -89,9 +95,8 @@ model Call {
   receiverId  Int
   status      CallStatus
   createdAt   DateTime   @default(now())
-
-  initiator User @relation("initiator", fields: [initiatorId], references: [id])
-  receiver  User @relation("received", fields: [receiverId], references: [id])
+  initiator   User       @relation("initiator", fields: [initiatorId], references: [id])
+  receiver    User       @relation("received", fields: [receiverId], references: [id])
 }
 
 enum CallStatus {

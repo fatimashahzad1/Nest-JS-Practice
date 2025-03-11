@@ -12,3 +12,13 @@ export enum CALL_STATUS {
   REJECTED = 'REJECTED',
   MISSED = 'MISSED',
 }
+
+export enum POST_TYPE {
+  EVENT = 'EVENT', // 1
+  FEED = 'FEED', //2
+}
+
+export enum POST_TYPE_NUMBER {
+  EVENT = 1, //'EVENT'
+  FEED = 2, // 'FEED'
+}
