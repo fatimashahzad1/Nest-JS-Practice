@@ -48,13 +48,16 @@ model Follow {
 }
 
 model Post {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   content   String?
-  author    User?    @relation(fields: [authorId], references: [id])
+  title     String?
+  author    User?     @relation(fields: [authorId], references: [id])
   authorId  Int?
-  type      PostType @default(FEED)
+  type      PostType  @default(FEED)
   postImage String?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
+  eventTime String?   @default("00:00")
+  eventDate DateTime? @default(now())
 }
 
 enum PostType {
@@ -69,6 +72,7 @@ model Article {
   estimatedTime String
   creator       User?   @relation(fields: [creatorId], references: [id])
   creatorId     Int?
+  articleImage  String?
 }
 
 model Chat {

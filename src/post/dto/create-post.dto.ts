@@ -1,4 +1,5 @@
 import {
+  IsDateString,
   IsEnum,
   IsNotEmpty,
   IsNumber,
@@ -16,6 +17,11 @@ export class CreatePostDto {
   @IsNotEmpty()
   content: string;
 
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  title: string;
+
   @IsEnum(POST_TYPE_NUMBER)
   type: POST_TYPE_NUMBER;
 
@@ -23,4 +29,14 @@ export class CreatePostDto {
   @IsString()
   @IsNotEmpty()
   postImage: string;
+
+  @IsOptional()
+  @IsDateString({}, { message: 'Event date must be a valid date.' })
+  @IsNotEmpty({ message: 'Event date is required.' })
+  eventDate: string;
+
+  @IsOptional()
+  @IsString({ message: 'Event time must be a valid date.' })
+  @IsNotEmpty({ message: 'Event time is required.' })
+  eventTime: string;
 }
