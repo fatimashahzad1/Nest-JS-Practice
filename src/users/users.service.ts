@@ -26,19 +26,62 @@ export class UsersService {
 
   async findOne(params: { where?: Prisma.UserWhereUniqueInput }) {
     const { where } = params;
-    const user = await this.prisma.user.findUnique({ where });
+    const user = await this.prisma.user.findUnique({
+      where,
+      select: {
+        id: true,
+        email: true,
+        password: true,
+        address: true,
+        phoneNumber: true,
+        country: true,
+        bankNo: false,
+        isAdmin: true,
+        name: true,
+        firstName: true,
+        lastName: true,
+        location: true,
+        profession: true,
+        bio: true,
+        links: true,
+        pictureUrl: true,
+        acceptTerms: false,
+        isVerified: false,
+      },
+    });
     if (user) return user;
     throw new NotFoundException('User not found.');
   }
 
   async createUser(data: Prisma.UserCreateInput): Promise<CreateUserResponse> {
     try {
+      const {
+        name,
+        email,
+        password,
+        acceptTerms,
+        phoneNumber,
+        address,
+        country,
+        bankNo,
+      } = data;
       // Hash the password
       const saltRounds = 10;
       data.password = await bcrypt.hash(data.password, saltRounds);
 
       // Create the user and capture the created user
-      const user = await this.prisma.user.create({ data });
+      const user = await this.prisma.user.create({
+        data: {
+          name,
+          email,
+          password,
+          acceptTerms,
+          phoneNumber,
+          address,
+          country,
+          bankNo,
+        },
+      });
 
       const payload = { id: user.id, email: user.email }; // Adjust payload as needed
       const token = await this.jwtService.signAsync(payload, {

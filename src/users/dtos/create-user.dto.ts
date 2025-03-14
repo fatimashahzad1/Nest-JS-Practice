@@ -14,6 +14,33 @@ export class CreateUserDTO {
   @MinLength(3, { message: 'Name must have more than 3 characters' })
   name: string;
 
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(3, { message: 'First Name must have more than 3 characters' })
+  firstName: string;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(3, { message: 'Last Name must have more than 3 characters' })
+  lastName: string;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  location: string;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  profession: string;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  bio: string;
+
   @IsEmail()
   email: string;
 
@@ -41,4 +68,13 @@ export class CreateUserDTO {
   @IsOptional()
   @IsBoolean()
   isVerified: boolean;
+
+  // @IsOptional()
+  // @IsArray()
+  // @ValidateNested({ each: true })
+  // links?: Prisma.JsonValue;
+
+  @IsOptional()
+  @IsString()
+  pictureUrl: string;
 }
