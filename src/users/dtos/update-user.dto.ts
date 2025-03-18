@@ -3,6 +3,7 @@ import { CreateUserDTO } from './create-user.dto';
 import {
   IsArray,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   ValidateNested,
@@ -20,9 +21,12 @@ export class UpdateUserDTO extends PartialType(CreateUserDTO) {
 export class LinkDTO {
   @IsString()
   @IsNotEmpty()
-  platform: string;
+  url: string;
 
   @IsString()
   @IsNotEmpty()
-  url: string;
+  platform: string;
+
+  @IsNumber()
+  userId: number;
 }

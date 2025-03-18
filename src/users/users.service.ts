@@ -10,6 +10,7 @@ import * as bcrypt from 'bcrypt';
 import { MailService } from 'src/mail/mail.service';
 import { JwtService } from '@nestjs/jwt';
 import { TOKEN_EXPIRATION } from 'src/constants/index';
+import { LinkDTO } from './dtos/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -43,14 +44,29 @@ export class UsersService {
         location: true,
         profession: true,
         bio: true,
-        links: true,
+        links: {
+          select: {
+            id: true,
+            platform: true,
+            url: true,
+            createdAt: false,
+            updatedAt: false,
+          },
+        },
         pictureUrl: true,
         acceptTerms: false,
         isVerified: false,
+        _count: {
+          select: {
+            posts: true, // Count the number of posts
+          },
+        },
       },
     });
     if (user) return user;
-    throw new NotFoundException('User not found.');
+    else {
+      throw new NotFoundException('User not found.');
+    }
   }
 
   async createUser(data: Prisma.UserCreateInput): Promise<CreateUserResponse> {
@@ -67,14 +83,14 @@ export class UsersService {
       } = data;
       // Hash the password
       const saltRounds = 10;
-      data.password = await bcrypt.hash(data.password, saltRounds);
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
 
       // Create the user and capture the created user
       const user = await this.prisma.user.create({
         data: {
           name,
           email,
-          password,
+          password: hashedPassword,
           acceptTerms,
           phoneNumber,
           address,
@@ -87,7 +103,6 @@ export class UsersService {
       const token = await this.jwtService.signAsync(payload, {
         expiresIn: TOKEN_EXPIRATION.VERIFICATION,
       });
-
       // Send user confirmation email
       await this.mailService.sendUserConfirmation(user, token, '2025');
 
@@ -112,19 +127,68 @@ export class UsersService {
   async updateUser(params: {
     where: Prisma.UserWhereUniqueInput;
     data: Prisma.UserUpdateInput;
-  }): Promise<User> {
-    const { where, data } = params;
-    return this.prisma.user.update({
+    reauthenticate: boolean;
+    include?: Prisma.UserInclude;
+    links?: LinkDTO[];
+  }): Promise<User & { token?: string }> {
+    const { where, data, include, links } = params;
+    const user = await this.prisma.user.update({
       data,
       where,
+      include,
     });
+
+    // If links are provided, handle them
+    if (links && links.length > 0) {
+      // Delete existing links
+      await this.prisma.link.deleteMany({
+        where: { userId: user.id },
+      });
+
+      // Create new links
+      await this.prisma.link.createMany({
+        data: links.map((link) => ({
+          platform: link.platform,
+          url: link.url,
+          userId: user.id,
+        })),
+      });
+    }
+
+    // Return the updated user with new links
+    const updatedUser = await this.prisma.user.findUnique({
+      where: { id: user.id },
+      include: {
+        links: true,
+      },
+    });
+
+    if (user && params.reauthenticate) {
+      const payload = { id: user.id, email: user.email }; // Adjust payload as needed
+      const token = await this.jwtService.signAsync(payload, {
+        expiresIn: TOKEN_EXPIRATION.VERIFICATION,
+      });
+      return { ...updatedUser, token };
+    }
+    return updatedUser;
   }
 
-  async deleteUser(where: Prisma.UserWhereUniqueInput): Promise<User> {
+  async deleteUser(where: Prisma.UserWhereUniqueInput): Promise<{
+    user: Partial<User>;
+    success: string;
+    message: string;
+    statusCode: HttpStatus;
+  }> {
     try {
-      return await this.prisma.user.delete({
+      const user = await this.prisma.user.delete({
         where,
       });
+      return {
+        user: { name: user.name, email: user.email },
+        success: 'Success',
+        message: 'User is deleted Successfully.',
+        statusCode: HttpStatus.OK,
+      };
     } catch (error) {
       if (error.code === 'P2025') {
         // P2025 is Prisma's code for "Record not found"

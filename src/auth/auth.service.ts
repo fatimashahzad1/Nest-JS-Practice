@@ -62,6 +62,7 @@ export class AuthService {
       await this.usersService.updateUser({
         where: { email: decoded.email },
         data: { isVerified: true },
+        reauthenticate: false,
       });
 
       return {
@@ -134,6 +135,7 @@ export class AuthService {
       await this.usersService.updateUser({
         where: { email: decoded.email },
         data: { password: await bcrypt.hash(password, 10) },
+        reauthenticate: false,
       });
       return {
         message: 'Password Successfully Changed',

@@ -7,14 +7,19 @@ import {
   Get,
   Inject,
   Param,
+  ParseBoolPipe,
   ParseIntPipe,
-  Patch,
+  Put,
+  Query,
   Request,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDTO } from './dtos/update-user.dto';
 import { AuthGuard } from 'src/guards/auth.guard';
+import { Response } from 'express';
+import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 
 @Controller('users')
 @UseGuards(AuthGuard)
@@ -29,6 +34,7 @@ export class UsersController {
     return this.userService.getAllUsers();
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('detail/:userId?')
   async getUserById(
     @Param('userId') userId: string | undefined,
@@ -44,33 +50,43 @@ export class UsersController {
     const user = await this.userService.findOne({
       where: { id: userIdNumber },
     });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...safeUser } = user;
     return safeUser;
   }
 
-  @Patch(':userId?')
-  updateUser(
+  @Put(':userId?')
+  async updateUser(
     @Param('userId', ParseIntPipe) userId: number,
     @Body() user: UpdateUserDTO,
+    @Res() response: Response,
+    @Query('reauthenticate', new ParseBoolPipe({ optional: true }))
+    reauthenticate: boolean = false,
   ) {
-    return this.userService.updateUser({
+    const { links, ...userData } = user;
+    const updatedUser = await this.userService.updateUser({
       where: { id: userId },
       data: {
-        ...user,
-        links: user.links
-          ? {
-              // Transform the links array into the structure expected by Prisma
-              upsert: user.links.map((link) => ({
-                where: { id: userId || -1 }, // Use a dummy ID if no ID is provided
-                update: { platform: link.platform, url: link.url },
-                create: { platform: link.platform, url: link.url },
-              })),
-            }
-          : undefined, // If no links are provided, set to undefined
+        ...userData,
       },
+      reauthenticate,
+      include: {
+        links: true,
+      },
+      links,
     });
+    if (updatedUser.token) {
+      response.cookie('access_token', updatedUser.token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 24 * 60 * 60 * 1000, // 1 day
+      });
+    }
+    return response.json(updatedUser);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':userId')
   deleteUser(@Param('userId', ParseIntPipe) userId: number) {
     return this.userService.deleteUser({ id: userId });
