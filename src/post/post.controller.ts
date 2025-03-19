@@ -9,6 +9,8 @@ import {
   DefaultValuePipe,
   Query,
   ParseIntPipe,
+  Request,
+  Delete,
 } from '@nestjs/common';
 import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
@@ -20,13 +22,15 @@ import { POST_TYPE, POST_TYPE_NUMBER } from 'src/constants/index';
 @Controller('post')
 @UseGuards(AuthGuard)
 export class PostController {
-  constructor(private readonly postService: PostService) { }
+  constructor(private readonly postService: PostService) {}
 
   // @Roles(Role.Admin)
   @Post()
-  async create(@Body() post: CreatePostDto): Promise<PostModel> {
-    const { content, title, authorId, type, postImage, eventTime, eventDate } = post;
-    console.log('post=====', post);
+  async create(
+    @Body() post: CreatePostDto,
+    @Request() req,
+  ): Promise<PostModel> {
+    const { content, title, type, postImage, eventTime, eventDate } = post;
     return this.postService.create({
       content,
       type: type === POST_TYPE_NUMBER.EVENT ? POST_TYPE.EVENT : POST_TYPE.FEED,
@@ -35,7 +39,7 @@ export class PostController {
       eventTime,
       eventDate,
       author: {
-        connect: { id: authorId },
+        connect: { id: req.user.id },
       },
     });
   }
@@ -76,8 +80,15 @@ export class PostController {
         type:
           type === POST_TYPE_NUMBER.EVENT ? POST_TYPE.EVENT : POST_TYPE.FEED,
       },
-      include: { author: { select: { id: true, name: true } } },
+      include: {
+        author: { select: { id: true, name: true, pictureUrl: true } },
+      },
       orderBy: { createdAt: 'desc' },
     });
+  }
+
+  @Delete(':id')
+  deletePost(@Param('id', ParseIntPipe) id: number): Promise<SuccessResponse> {
+    return this.postService.deletePost(id);
   }
 }
