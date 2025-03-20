@@ -83,6 +83,7 @@ export class FollowService {
         name: user.name,
         email: user.email,
         isFollowedByCurrentUser: user.following.length > 0,
+        pictureUrl: user.pictureUrl,
       })),
     };
   }
@@ -121,14 +122,13 @@ export class FollowService {
 
   // Get all users with follow status
   async getAllFollowedUsers(currentUserId: number) {
-    console.log({ currentUserId });
     const users = await this.prisma.user.findUnique({
       where: { id: currentUserId },
       include: {
         followers: {
           select: {
             following: {
-              select: { id: true, name: true, email: true },
+              select: { id: true, name: true, email: true, pictureUrl: true },
             },
           },
         },
@@ -140,5 +140,41 @@ export class FollowService {
       email: users.email,
       following: users.followers.map((user) => user.following),
     };
+  }
+
+  // Get all users with unfollow status
+  async getAllUnFollowedUsers(currentUserId: number, count: number) {
+    // Get the list of users followed by the current user
+    const followedUsers = await this.prisma.follow.findMany({
+      where: { followerId: currentUserId },
+      select: { followingId: true },
+    });
+    const followedIds = followedUsers.map((follow) => follow.followingId);
+
+    // Get users who are NOT followed by the current user
+    const usersNotFollowed = await this.prisma.user.findMany({
+      take: count,
+      where: {
+        id: { notIn: [...followedIds, currentUserId] }, // Exclude followed users
+      },
+      select: {
+        id: true,
+        email: true,
+        password: false,
+        address: true,
+        phoneNumber: true,
+        country: true,
+        bankNo: false,
+        isAdmin: false,
+        name: true,
+        firstName: true,
+        lastName: true,
+        location: true,
+        profession: true,
+        bio: true,
+        pictureUrl: true,
+      },
+    });
+    return usersNotFollowed;
   }
 }

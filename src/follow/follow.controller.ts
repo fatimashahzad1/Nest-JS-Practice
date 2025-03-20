@@ -7,10 +7,13 @@ import {
   Delete,
   Get,
   Query,
+  ValidationPipe,
+  UsePipes,
 } from '@nestjs/common';
 import { FollowService } from './follow.service';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { ParseStringPipe } from 'src/post/pipes/ParseStringPipe.pipe';
+import { GetUnfollowedUsersDto } from './dto/get-unfollowed-users.dto';
 
 @Controller('people')
 @UseGuards(JwtAuthGuard)
@@ -42,6 +45,17 @@ export class FollowController {
   async getAllFollowedUSers(@Request() req) {
     const currentUserId = req.user.id; // Extract current logged-in user's ID from JWT payload
     return this.followService.getAllFollowedUsers(currentUserId);
+  }
+
+  @Get('/unfollow')
+  @UsePipes(new ValidationPipe({ transform: true })) // Enables DTO validation & transformation
+  async getAllUnFollowedUSers(
+    @Request() req,
+    @Query() query: GetUnfollowedUsersDto,
+  ) {
+    const currentUserId = req.user.id; // Extract current logged-in user's ID from JWT payload
+    const count = query.count ?? 3;
+    return this.followService.getAllUnFollowedUsers(currentUserId, count);
   }
 
   @Get('/search')
