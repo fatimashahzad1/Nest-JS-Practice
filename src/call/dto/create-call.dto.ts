@@ -7,6 +7,7 @@ export class CreateCallDto {
 
   @IsString()
   receiverId: number;
+
   @IsEnum(CALL_STATUS)
   status: CALL_STATUS;
 }

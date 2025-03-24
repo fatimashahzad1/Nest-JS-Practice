@@ -1,11 +1,14 @@
 import {
   IsBoolean,
   IsEmail,
+  IsEnum,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   MinLength,
 } from 'class-validator';
+import { UserType } from 'src/constants';
 
 export class CreateUserDTO {
   @IsOptional()
@@ -47,9 +50,6 @@ export class CreateUserDTO {
   @IsString()
   password: string;
 
-  @IsBoolean()
-  isAdmin: boolean;
-
   @IsString()
   address: string;
 
@@ -59,8 +59,8 @@ export class CreateUserDTO {
   @IsString()
   country: string;
 
-  @IsString()
-  bankNo: string;
+  @IsNumber()
+  bankNo: number;
 
   @IsBoolean()
   acceptTerms: boolean;
@@ -77,4 +77,19 @@ export class CreateUserDTO {
   @IsOptional()
   @IsString()
   pictureUrl: string;
+
+  @IsOptional()
+  @IsString()
+  companyName: string;
+
+  @IsOptional()
+  @IsString()
+  companyWebsite: string;
+
+  @IsOptional()
+  @IsNumber()
+  companySize: number;
+
+  @IsEnum(UserType, { message: 'userType must be a valid UserType value' })
+  userType: UserType;
 }

@@ -11,11 +11,11 @@ import { ArticleModule } from './article/article.module';
 import { FollowModule } from './follow/follow.module';
 import { ChatModule } from './chat/chat.module';
 import { ChatGateway } from './sockets/socket/socket.gateway';
-import { PrismaService } from './prisma.service';
 import { AgoraModule } from './agora/agora.module';
 import { AgoraService } from './agora/agora.service';
 import { CallModule } from './call/call.module';
 import { CallService } from './call/call.service';
+import { PrismaModule } from './prisma/prisma.module';
 @Module({
   imports: [
     UsersModule,
@@ -31,15 +31,10 @@ import { CallService } from './call/call.service';
     ChatModule,
     AgoraModule,
     CallModule,
+    PrismaModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    ChatGateway,
-    PrismaService,
-    AgoraService,
-    CallService,
-  ],
+  providers: [AppService, ChatGateway, AgoraService, CallService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

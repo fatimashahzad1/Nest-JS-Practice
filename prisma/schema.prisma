@@ -20,9 +20,9 @@ model User {
   address        String    @default("")
   phoneNumber    String    @default("")
   country        String    @default("")
-  bankNo         String    @default("")
+  bankNo         Int       @default(0)
   isAdmin        Boolean   @default(false)
-  name           String
+  name           String?
   firstName      String?
   lastName       String?
   location       String?
@@ -40,6 +40,10 @@ model User {
   Message        Message[]
   initiatorCalls Call[]    @relation("initiator")
   receivedCalls  Call[]    @relation("received")
+  companyName    String?
+  companyWebsite String?
+  companySize    Int?
+  userType       UserType  @default(INDIVIDUAL)
 }
 
 model Link {
@@ -126,4 +130,9 @@ enum CallStatus {
   RECEIVED
   REJECTED
   MISSED
+}
+
+enum UserType {
+  INDIVIDUAL
+  COMPANY
 }

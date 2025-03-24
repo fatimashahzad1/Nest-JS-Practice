@@ -4,13 +4,13 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from 'src/prisma.service';
 import { Prisma, User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { MailService } from 'src/mail/mail.service';
 import { JwtService } from '@nestjs/jwt';
 import { TOKEN_EXPIRATION } from 'src/constants/index';
 import { LinkDTO } from './dtos/update-user.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class UsersService {
@@ -80,6 +80,10 @@ export class UsersService {
         address,
         country,
         bankNo,
+        companyName,
+        companyWebsite,
+        companySize,
+        userType,
       } = data;
       // Hash the password
       const saltRounds = 10;
@@ -96,6 +100,10 @@ export class UsersService {
           address,
           country,
           bankNo,
+          companyName,
+          companySize,
+          companyWebsite,
+          userType,
         },
       });
 

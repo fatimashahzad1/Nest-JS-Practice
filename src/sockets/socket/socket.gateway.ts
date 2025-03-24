@@ -13,7 +13,7 @@ import { Server, Socket } from 'socket.io';
 import { AgoraService } from 'src/agora/agora.service';
 import { CallService } from 'src/call/call.service';
 import { CALL_STATUS } from 'src/constants/index';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @WebSocketGateway(3005, {
   cors: {

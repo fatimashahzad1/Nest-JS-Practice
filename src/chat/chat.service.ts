@@ -1,10 +1,10 @@
 import { ForbiddenException, HttpStatus, Injectable } from '@nestjs/common';
 import { Chat } from '@prisma/client';
-import { PrismaService } from 'src/prisma.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class ChatService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
   // Create a new chat between two users
   async createChat(currentUserId: number, otherUSerId: number): Promise<Chat> {
     // Check if the users follow each other
