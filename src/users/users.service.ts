@@ -44,6 +44,10 @@ export class UsersService {
         location: true,
         profession: true,
         bio: true,
+        userType: true,
+        companyName: true,
+        companyWebsite: true,
+        companySize: true,
         links: {
           select: {
             id: true,

@@ -14,12 +14,14 @@ import { Job } from '@prisma/client';
 import { CreateJobDto } from './dto/create-job.dto';
 import { JobService } from './job.service';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
+import { CompanyAuthGuard } from 'src/guards/company-auth-guard';
 
 @Controller('jobs')
 @UseGuards(JwtAuthGuard)
 export class JobController {
   constructor(private readonly jobsService: JobService) {}
 
+  @UseGuards(CompanyAuthGuard)
   @Post()
   create(@Body() createJobDto: CreateJobDto, @Req() req): Promise<Job> {
     return this.jobsService.create(createJobDto, req.user.id);
