@@ -16,6 +16,7 @@ import { AgoraService } from './agora/agora.service';
 import { CallModule } from './call/call.module';
 import { CallService } from './call/call.service';
 import { PrismaModule } from './prisma/prisma.module';
+import { JobModule } from './job/job.module';
 @Module({
   imports: [
     UsersModule,
@@ -32,6 +33,7 @@ import { PrismaModule } from './prisma/prisma.module';
     AgoraModule,
     CallModule,
     PrismaModule,
+    JobModule,
   ],
   controllers: [AppController],
   providers: [AppService, ChatGateway, AgoraService, CallService],
