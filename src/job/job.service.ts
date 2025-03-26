@@ -54,4 +54,31 @@ export class JobService {
       where: { id },
     });
   }
+
+  async findAllWithPagination(
+    page: number,
+    perPage: number,
+  ): Promise<Partial<Job>[]> {
+    return this.prisma.job.findMany({
+      skip: page * perPage,
+      take: perPage,
+      select: {
+        id: true,
+        role: true,
+        hourlyRate: true,
+        location: true,
+        createdAt: true,
+        company: {
+          select: {
+            id: true,
+            name: true,
+            pictureUrl: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
 }

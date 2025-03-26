@@ -8,6 +8,9 @@ import {
   Delete,
   Req,
   UseGuards,
+  Query,
+  DefaultValuePipe,
+  ParseIntPipe,
 } from '@nestjs/common';
 
 import { Job } from '@prisma/client';
@@ -25,6 +28,14 @@ export class JobController {
   @Post()
   create(@Body() createJobDto: CreateJobDto, @Req() req): Promise<Job> {
     return this.jobsService.create(createJobDto, req.user.id);
+  }
+
+  @Get('all')
+  async getAllJobs(
+    @Query('page', new DefaultValuePipe(0), ParseIntPipe) page: number,
+    @Query('perPage', new DefaultValuePipe(10), ParseIntPipe) perPage: number,
+  ): Promise<Partial<Job>[]> {
+    return this.jobsService.findAllWithPagination(page, perPage);
   }
 
   @Get() findAll(): Promise<Job[]> {

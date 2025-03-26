@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  DefaultValuePipe,
   Delete,
   forwardRef,
   Get,
@@ -90,5 +91,14 @@ export class UsersController {
   @Delete(':userId')
   deleteUser(@Param('userId', ParseIntPipe) userId: number) {
     return this.userService.deleteUser({ id: userId });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('companies')
+  async getAllCompanies(
+    @Query('page', new DefaultValuePipe(0), ParseIntPipe) page: number,
+    @Query('perPage', new DefaultValuePipe(10), ParseIntPipe) perPage: number,
+  ) {
+    return this.userService.findAllCompanies(page, perPage);
   }
 }

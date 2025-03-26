@@ -11,6 +11,7 @@ import { JwtService } from '@nestjs/jwt';
 import { TOKEN_EXPIRATION } from 'src/constants/index';
 import { LinkDTO } from './dtos/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { UserType } from 'src/constants';
 
 @Injectable()
 export class UsersService {
@@ -208,5 +209,32 @@ export class UsersService {
       }
       throw error; // Re-throw other errors
     }
+  }
+
+  async findAllCompanies(
+    page: number,
+    perPage: number,
+  ): Promise<Partial<User>[]> {
+    return this.prisma.user.findMany({
+      where: {
+        userType: UserType.COMPANY, // Filter users with userType "COMPANY"
+      },
+      skip: page * perPage,
+      take: perPage,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        companyName: true,
+        companyWebsite: true,
+        companySize: true,
+        location: true,
+        pictureUrl: true,
+        country: true,
+      },
+      orderBy: {
+        name: 'asc', // Order by creation date (optional)
+      },
+    });
   }
 }

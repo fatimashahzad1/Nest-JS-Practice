@@ -127,7 +127,13 @@ export class FollowService {
         followers: {
           select: {
             following: {
-              select: { id: true, name: true, email: true, pictureUrl: true },
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                pictureUrl: true,
+                userType: true,
+              },
             },
           },
         },
