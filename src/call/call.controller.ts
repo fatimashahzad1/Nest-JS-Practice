@@ -5,6 +5,9 @@ import {
   Get,
   UseGuards,
   Request,
+  Query,
+  DefaultValuePipe,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { CallService } from './call.service';
 import { CreateCallDto } from './dto/create-call.dto';
@@ -23,12 +26,17 @@ export class CallController {
       req.initiatorId,
       req.receiverId,
       req.status,
+      req.callType,
     );
   }
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  async getUserCalls(@Request() req) {
-    return this.callService.getUserCalls(req.user.id);
+  async getUserCalls(
+    @Request() req,
+    @Query('page', new DefaultValuePipe(0), ParseIntPipe) page: number,
+    @Query('perPage', new DefaultValuePipe(10), ParseIntPipe) perPage: number,
+  ) {
+    return this.callService.getUserCalls(req.user.id, page, perPage);
   }
 }

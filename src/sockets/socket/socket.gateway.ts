@@ -41,6 +41,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       callerName: string;
       receiverId: number;
       receiverName: string;
+      type: 'AUDIO' | 'VIDEO';
     }
   >();
 
@@ -131,9 +132,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       callerName: string;
       receiverId: number;
       receiverName: string;
+      type: 'AUDIO' | 'VIDEO';
     },
   ) {
-    const { callerId, callerName, receiverId, receiverName } = data;
+    console.log('here in callUser', data);
+    const { callerId, callerName, receiverId, receiverName, type } = data;
     const channelName = `call-${callerId}-${receiverId}`;
 
     // Generate Agora token
@@ -149,6 +152,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       callerName,
       receiverId,
       receiverName,
+      type,
     });
     // send caller token recipient
     this.users
@@ -162,6 +166,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       receiverId,
       receiverName,
       channelName,
+      type,
     });
   }
 
@@ -173,10 +178,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       callerName: string;
       receiverId: number;
       receiverName: string;
+      type: 'AUDIO' | 'VIDEO';
     },
     @ConnectedSocket() client: Socket,
   ) {
-    const { callerId, receiverId, callerName, receiverName } = data;
+    const { callerId, receiverId, callerName, receiverName, type } = data;
     const channelName = `call-${callerId}-${receiverId}`;
     if (!this.activeCalls.has(channelName)) {
       client.emit('callError', { message: 'Call not found or expired' });
@@ -196,20 +202,23 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       receiverName,
       channelName,
       token,
+      type,
     });
     await this.callService.createCall(
       callerId,
       receiverId,
       CALL_STATUS.RECEIVED,
+      type,
     );
   }
 
   @SubscribeMessage('leaveCall')
-  async handleRejectCall(
+  async handleLeaveCall(
     @MessageBody() data: { channelName: string },
     @ConnectedSocket() client: Socket,
   ) {
     const { channelName } = data;
+    console.log('here in leave call..............');
 
     if (!this.activeCalls.has(channelName)) {
       client.emit('callError', { message: 'Call not found or already ended' });
@@ -217,5 +226,48 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
     // Remove the call from active calls
     this.activeCalls.delete(channelName);
+  }
+
+  @SubscribeMessage('rejectCall')
+  async handleRejectCall(
+    @MessageBody()
+    data: {
+      callerId: number;
+      receiverId: number;
+      channelName: string;
+      callType: 'AUDIO' | 'VIDEO';
+    },
+    @ConnectedSocket() client: Socket,
+  ) {
+    const { callerId, receiverId, channelName, callType } = data;
+
+    // Check if the call exists in active calls
+    if (!this.activeCalls.has(channelName)) {
+      client.emit('callError', { message: 'Call not found or already ended' });
+      return;
+    }
+
+    // Notify the caller that the call was rejected
+    const callerSocket = this.users.get(callerId);
+    if (callerSocket) {
+      callerSocket.emit('callRejected', {
+        receiverId,
+        channelName,
+        message: 'The call was rejected by the receiver.',
+      });
+    }
+
+    // Remove the call from active calls
+    this.activeCalls.delete(channelName);
+
+    // Optionally, log or update the call status in the database
+    await this.callService.createCall(
+      callerId,
+      receiverId,
+      CALL_STATUS.REJECTED,
+      callType,
+    );
+
+    console.log(`Call rejected: channelName=${channelName}`);
   }
 }

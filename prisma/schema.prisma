@@ -133,6 +133,7 @@ model Call {
   initiatorId Int
   receiverId  Int
   status      CallStatus
+  callType    CallType   @default(VIDEO)
   createdAt   DateTime   @default(now())
   initiator   User       @relation("initiator", fields: [initiatorId], references: [id])
   receiver    User       @relation("received", fields: [receiverId], references: [id])
@@ -142,6 +143,11 @@ enum CallStatus {
   RECEIVED
   REJECTED
   MISSED
+}
+
+enum CallType {
+  VIDEO
+  AUDIO
 }
 
 enum UserType {

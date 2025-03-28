@@ -13,6 +13,11 @@ export enum CALL_STATUS {
   MISSED = 'MISSED',
 }
 
+export enum CALL_TYPE {
+  AUDIO = 'AUDIO',
+  VIDEO = 'VIDEO',
+}
+
 export enum POST_TYPE {
   EVENT = 'EVENT', // 1
   FEED = 'FEED', //2

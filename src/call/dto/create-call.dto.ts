@@ -1,5 +1,5 @@
 import { IsEnum, IsNumber, IsString } from 'class-validator';
-import { CALL_STATUS } from 'src/constants/index';
+import { CALL_STATUS, CALL_TYPE } from 'src/constants/index';
 
 export class CreateCallDto {
   @IsNumber()
@@ -10,4 +10,7 @@ export class CreateCallDto {
 
   @IsEnum(CALL_STATUS)
   status: CALL_STATUS;
+
+  @IsEnum(CALL_TYPE)
+  callType: CALL_TYPE;
 }

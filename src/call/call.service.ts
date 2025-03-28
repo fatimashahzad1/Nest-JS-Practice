@@ -9,37 +9,57 @@ export class CallService {
     initiatorId: number,
     receiverId: number,
     status: 'RECEIVED' | 'REJECTED' | 'MISSED',
+    callType: 'AUDIO' | 'VIDEO',
   ) {
     return await this.prisma.call.create({
-      data: { initiatorId, receiverId, status },
+      data: { initiatorId, receiverId, status, callType },
     });
   }
 
-  async getUserCalls(userId: number) {
-    const calls = await this.prisma.call.findMany({
-      where: {
-        OR: [
-          { initiatorId: userId }, // Calls where the user is the initiator
-          { receiverId: userId }, // Calls where the user is the receiver
-        ],
-      },
-      include: {
-        initiator: { select: { id: true, name: true } }, // Fetch initiator details
-        receiver: { select: { id: true, name: true } }, // Fetch receiver details
-      },
-      orderBy: {
-        createdAt: 'desc', // Sort by latest calls first
-      },
-    });
-    // Transform response to add callSend and callReceived
-    return calls.map((call) => ({
+  async getUserCalls(userId: number, page: number, perPage: number) {
+    const [calls, total] = await Promise.all([
+      this.prisma.call.findMany({
+        where: {
+          OR: [{ initiatorId: userId }, { receiverId: userId }],
+        },
+        include: {
+          initiator: { select: { id: true, name: true } },
+          receiver: { select: { id: true, name: true } },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+        skip: page * perPage,
+        take: perPage,
+      }),
+      this.prisma.call.count({
+        where: {
+          OR: [{ initiatorId: userId }, { receiverId: userId }],
+        },
+      }),
+    ]);
+
+    const transformedCalls = calls.map((call) => ({
       id: call.id,
       createdAt: call.createdAt,
       status: call.status,
       initiator: call.initiator,
       receiver: call.receiver,
-      callSend: call.initiatorId === userId, // If user is the initiator
-      callReceived: call.receiverId === userId, // If user is the receiver
+      callSend: call.initiatorId === userId,
+      callReceived: call.receiverId === userId,
+      callType: call.callType,
     }));
+
+    return {
+      data: transformedCalls,
+      meta: {
+        total,
+        page,
+        perPage,
+        totalPages: Math.ceil(total / perPage),
+        hasNextPage: (page + 1) * perPage < total,
+        hasPreviousPage: page > 0,
+      },
+    };
   }
 }

@@ -133,6 +133,7 @@ export class FollowService {
                 email: true,
                 pictureUrl: true,
                 userType: true,
+                companyName: true,
               },
             },
           },
